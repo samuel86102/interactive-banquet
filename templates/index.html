@@ -79,11 +79,11 @@
                     });
                 } else {
                     if (!numberSpinners[i]) {
-                        tableNumberDiv.textContent = getRandomInt(1, 100);
+                        tableNumberDiv.textContent = getRandomInt(state.number_range[0], state.number_range[1]);
                         numberSpinners[i] = setInterval(() => {
                             const numDiv = document.getElementById(`number-${i}`);
                             if (numDiv) {
-                                numDiv.textContent = getRandomInt(1, 100);
+                                numDiv.textContent = getRandomInt(state.number_range[0], state.number_range[1]);
                             }
                         }, 100);
                     }

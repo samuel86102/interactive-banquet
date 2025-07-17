@@ -7,7 +7,7 @@ from flask_socketio import SocketIO, emit
 
 # --- 配置 ---
 TOTAL_TABLES = 3  # 可在此調整總桌數
-NUMBER_RANGE = (1, 100) # 數字範圍
+NUMBER_RANGE = (1, 10) # 數字範圍
 
 # --- 應用程式初始化 ---
 app = Flask(__name__)
@@ -28,7 +28,8 @@ def get_game_state():
     return {
         'tables': tables_state,
         'total_tables': TOTAL_TABLES,
-        'all_locked': all(table['locked'] for table in tables_state.values())
+        'all_locked': all(table['locked'] for table in tables_state.values()),
+        'number_range': NUMBER_RANGE
     }
 
 def find_winner():

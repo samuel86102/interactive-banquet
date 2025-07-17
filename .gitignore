@@ -1,0 +1,89 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VS Code settings
+.vscode/
+
+# macOS and Linux system files
+.DS_Store
+*.swp
+*.swo
+
+# Python egg files
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# pipenv / poetry / pdm
+Pipfile.lock
+poetry.lock
+__pypackages__/
+
+# MyPy and Pyright
+.mypy_cache/
+.pyright/
+
+# Pyre type checker
+.pyre/
+
+# Logs
+*.log
+
+# Local databases
+*.sqlite3
+
+# dotenv environment variables
+.env.*
+.env
+
+# Streamlit
+.streamlit/
+
+# Sphinx documentation
+docs/_build/
+
+# Compiled Cython files
+*.c
+*.so
+
+# Profiling data
+.prof
+
+# Other IDEs
+.idea/
+*.iml
+

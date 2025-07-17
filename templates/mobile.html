@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>選擇桌號</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #2c3e50; color: white; text-align: center; }
+        .container { max-width: 90%; z-index: 10; /* 讓內容在煙火之上 */}
+        #selection-view, #game-view { display: none; }
+        #selection-view.active, #game-view.active { display: block; }
+        h2 { color: #ecf0f1; }
+        select, button { width: 100%; padding: 15px; font-size: 1.2em; border-radius: 8px; border: none; margin-top: 15px; }
+        select { background: #34495e; color: white; }
+        button { background: #e74c3c; color: white; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+        button:disabled { background: #95a5a6; cursor: not-allowed; }
+        #number-display { font-size: 6em; font-weight: bold; color: #f1c40f; margin: 30px 0; min-height: 100px; }
+        #message { margin-top: 15px; color: #e67e22; height: 20px; }
+        
+        /* --- 新增 --- */
+        #fireworks-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="fireworks-container"></div>
+
+    <div class="container">
+        <div id="selection-view" class="active">
+            <h2>請選擇您的桌號</h2>
+            <select id="table-selector">
+                <option value="">-- 請選擇 --</option>
+            </select>
+            <div id="message"></div>
+        </div>
+
+        <div id="game-view">
+            <h2 id="game-title"></h2>
+            <div id="number-display">--</div>
+            <button id="stop-button">就是這個！</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.10.7/dist/index.umd.js"></script>
+    <script>
+        const socket = io();
+
+        const selectionView = document.getElementById('selection-view');
+        const gameView = document.getElementById('game-view');
+        const tableSelector = document.getElementById('table-selector');
+        const messageDiv = document.getElementById('message');
+        
+        const gameTitle = document.getElementById('game-title');
+        const numberDisplay = document.getElementById('number-display');
+        const stopButton = document.getElementById('stop-button');
+        
+        // --- 新增 ---
+        const fireworksContainer = document.getElementById('fireworks-container');
+        const fireworks = new Fireworks.default(fireworksContainer);
+        // --- 結束新增 ---
+
+        let myTableId = null;
+        let numberSpinner = null;
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // (此處的 'update_state' 監聽器和相關函式不變，故省略以節省篇幅)
+        // ... 原有程式碼 ...
+        socket.on('update_state', (state) => {
+            console.log('State updated:', state);
+            if (tableSelector.options.length <= 1) {
+                for (let i = 1; i <= state.total_tables; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `第 ${i} 桌`;
+                    if (state.tables[i].locked) {
+                        option.disabled = true;
+                        option.textContent += ' (已鎖定)';
+                    } else if (state.tables[i].sid) {
+                        option.disabled = true;
+                        option.textContent += ' (操作中)';
+                    }
+                    tableSelector.appendChild(option);
+                }
+            } else {
+                for (let i = 1; i <= state.total_tables; i++) {
+                    const option = tableSelector.options[i];
+                    if (state.tables[i].locked) {
+                        option.disabled = true;
+                        option.textContent = `第 ${i} 桌 (已鎖定)`;
+                    } else if (state.tables[i].sid && myTableId != i) {
+                        option.disabled = true;
+                        option.textContent = `第 ${i} 桌 (操作中)`;
+                    } else {
+                        option.disabled = false;
+                        option.textContent = `第 ${i} 桌`;
+                    }
+                }
+            }
+            if (myTableId) {
+                const tableState = state.tables[myTableId];
+                if (tableState.locked) {
+                    if (numberSpinner) clearInterval(numberSpinner);
+                    numberDisplay.textContent = tableState.number;
+                    stopButton.textContent = '已鎖定';
+                    stopButton.disabled = true;
+                }
+            }
+        });
+        tableSelector.addEventListener('change', () => {
+            const selectedId = tableSelector.value;
+            if (selectedId) {
+                messageDiv.textContent = '';
+                socket.emit('select_table', { table_id: selectedId });
+            }
+        });
+        socket.on('table_in_use', (data) => {
+            messageDiv.textContent = `第 ${data.table_id} 桌正在被他人操作中！`;
+            tableSelector.value = '';
+        });
+        socket.on('table_selected_ok', (data) => {
+            myTableId = data.table_id;
+            selectionView.classList.remove('active');
+            gameView.classList.add('active');
+            gameTitle.textContent = `第 ${myTableId} 桌`;
+            numberSpinner = setInterval(() => {
+                numberDisplay.textContent = getRandomInt(1, 100);
+            }, 100);
+        });
+        stopButton.addEventListener('click', () => {
+            if (myTableId) {
+                stopButton.disabled = true;
+                stopButton.textContent = '選定中...';
+                socket.emit('stop_number', { table_id: myTableId });
+            }
+        });
+        // ... 原有程式碼結束 ...
+
+
+        // --- 新增：監聽 game_over 事件 ---
+        socket.on('game_over', (data) => {
+            const winnerId = data.winner.table_id;
+            
+            // 檢查自己是否為獲勝者
+            if (myTableId && myTableId == winnerId) {
+                // 是獲勝者！
+                console.log("We are the winner!");
+                
+                // 顯示慶祝訊息
+                gameTitle.innerHTML = "🎉 我們是冠軍！ 🎉";
+                
+                // 開始放煙火
+                fireworks.start();
+            }
+        });
+
+    </script>
+</body>
+</html>

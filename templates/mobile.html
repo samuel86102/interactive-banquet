@@ -157,6 +157,13 @@
             }
         });
 
+        // --- 新增：監聽遊戲重置事件 ---
+        socket.on('game_restarted', () => {
+            console.log('Game has been restarted. Reloading page.');
+            // 簡單地重新整理頁面，回到初始狀態
+            window.location.reload();
+        });
+
     </script>
 </body>
 </html>

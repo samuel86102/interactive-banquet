@@ -137,8 +137,46 @@ def handle_stop_number(data):
             winner = find_winner()
             print(f"Game Over! Winner is Table {winner['table_id']} with number {winner['number']}")
             # 延遲一點時間再公佈結果，增加戲劇性
-            socketio.sleep(2) 
+            socketio.sleep(2)
             socketio.emit('game_over', {'winner': winner})
+
+
+@socketio.on('reset_game')
+def handle_reset_game():
+    """處理管理員重置遊戲的請求"""
+    global tables_state, used_numbers
+    tables_state = {
+        i: {'number': None, 'locked': False, 'sid': None} for i in range(1, TOTAL_TABLES + 1)
+    }
+    used_numbers = set()
+    print("--- GAME RESET by admin ---")
+    # 廣播重置信號，讓客戶端可以做特殊處理（例如重新整理）
+    socketio.emit('game_restarted')
+    # 廣播更新後的狀態
+    socketio.emit('update_state', get_game_state())
+
+
+@socketio.on('reset_table')
+def handle_reset_table(data):
+    """處理管理員重置單一桌次的請求"""
+    table_id = int(data['table_id'])
+
+    if table_id in tables_state:
+        table_to_reset = tables_state[table_id]
+
+        # 如果該桌有已鎖定的號碼，將其從 used_numbers 中移除
+        if table_to_reset['locked'] and table_to_reset['number'] is not None:
+            if table_to_reset['number'] in used_numbers:
+                used_numbers.remove(table_to_reset['number'])
+
+        # 重置該桌的狀態
+        tables_state[table_id] = {'number': None, 'locked': False, 'sid': None}
+
+        print(f"Admin reset table {table_id}")
+
+        # 廣播更新後的狀態
+        socketio.emit('update_state', get_game_state())
+
 
 if __name__ == '__main__':
     print("Server starting on http://0.0.0.0:5000")

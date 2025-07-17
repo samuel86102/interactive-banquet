@@ -164,6 +164,12 @@
             window.location.reload();
         });
 
+        // --- 新增：監聽被管理員強制重置的事件 ---
+        socket.on('force_reset_client', () => {
+            alert('您的桌次已被管理員重置，將返回選擇畫面。');
+            window.location.reload();
+        });
+
     </script>
 </body>
 </html>

@@ -163,6 +163,7 @@ def handle_reset_table(data):
 
     if table_id in tables_state:
         table_to_reset = tables_state[table_id]
+        client_sid_to_reset = table_to_reset.get('sid') # 在重置前獲取SID
 
         # 如果該桌有已鎖定的號碼，將其從 used_numbers 中移除
         if table_to_reset['locked'] and table_to_reset['number'] is not None:
@@ -173,6 +174,11 @@ def handle_reset_table(data):
         tables_state[table_id] = {'number': None, 'locked': False, 'sid': None}
 
         print(f"Admin reset table {table_id}")
+
+        # 如果有客戶端在該桌上，強制其重置
+        if client_sid_to_reset:
+            socketio.emit('force_reset_client', room=client_sid_to_reset)
+            print(f"Sent force_reset_client to SID {client_sid_to_reset}")
 
         # 廣播更新後的狀態
         socketio.emit('update_state', get_game_state())

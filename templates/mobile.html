@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>選擇桌號</title>
+    <title>師大重聚 點出好運</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0D1B2A;
@@ -18,7 +18,7 @@
             --disabled-color: #95a5a6;
         }
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Noto Sans TC', 'Poppins', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -113,7 +113,7 @@
 
     <div class="container">
         <div id="selection-view" class="active">
-            <h2>請選擇您的桌號</h2>
+            <h2>師大重聚 點出好運</h2>
             <select id="table-selector">
                 <option value="">-- 請選擇 --</option>
             </select>
@@ -211,7 +211,7 @@
             myTableId = data.table_id;
             selectionView.classList.remove('active');
             gameView.classList.add('active');
-            gameTitle.textContent = `第 ${myTableId} 桌`;
+            gameTitle.textContent = `師大重聚 - 第 ${myTableId} 桌`;
             numberSpinner = setInterval(() => {
                 numberDisplay.textContent = getRandomInt(1, 100);
             }, 100);

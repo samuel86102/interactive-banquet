@@ -185,6 +185,30 @@ def handle_reset_table(data):
         socketio.emit('update_state', get_game_state())
 
 
+@socketio.on('set_total_tables')
+def handle_set_total_tables(data):
+    """設定總桌數並重置遊戲"""
+    global TOTAL_TABLES
+    new_total = int(data.get('total_tables'))
+    if new_total and new_total > 0:
+        TOTAL_TABLES = new_total
+        print(f"--- Admin set total tables to {TOTAL_TABLES} ---")
+        # 重置整個遊戲
+        handle_reset_game()
+
+
+@socketio.on('set_number_range')
+def handle_set_number_range(data):
+    """設定數字範圍並重置遊戲"""
+    global NUMBER_RANGE
+    new_range = data.get('range')
+    if new_range and isinstance(new_range, list) and len(new_range) == 2:
+        NUMBER_RANGE = tuple(new_range)
+        print(f"--- Admin set number range to {NUMBER_RANGE} ---")
+        # 重置整個遊戲
+        handle_reset_game()
+
+
 if __name__ == '__main__':
     print("Server starting on http://0.0.0.0:5000")
     print("Main display: http://<Your-IP>:5000")

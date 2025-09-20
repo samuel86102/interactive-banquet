@@ -5,6 +5,19 @@ eventlet.monkey_patch()
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
 import random
+import socket
+
+def get_ip_address():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
 
 # --- 配置 ---
 # 根據 layout.jpg 的固定桌位定義
@@ -75,7 +88,8 @@ def find_winner():
 # --- HTTP 路由 ---
 @app.route('/')
 def index():
-    return render_template('index.html')
+    ip_address = get_ip_address()
+    return render_template('index.html', ip_address=ip_address)
 
 @app.route('/mobile')
 def mobile():
@@ -191,7 +205,8 @@ def handle_set_test_mode(data):
         handle_reset_game()
 
 if __name__ == '__main__':
-    print("Server starting on http://0.0.0.0:5000")
-    print("Main display: http://<Your-IP>:5000")
-    print("Mobile client: http://<Your-IP>:5000/mobile")
+    ip = get_ip_address()
+    print(f"Server starting...")
+    print(f"Main display: http://{ip}:5000")
+    print(f"Mobile client: http://{ip}:5000/mobile")
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

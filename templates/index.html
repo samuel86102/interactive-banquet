@@ -28,7 +28,11 @@
         }
         body {
             font-family: 'Noto Sans TC', 'Poppins', sans-serif;
-            background: var(--bg-color);
+            background-color: var(--bg-color);
+            background-image: url('/static/background.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: var(--text-color);
             text-align: center;
             margin: 0;
@@ -116,6 +120,20 @@
         #reset-button { background-color: var(--reset-color); }
         #reset-button:hover { background-color: var(--reset-hover); }
         .settings-group.toggle-group { display: flex; justify-content: space-between; align-items: center; }
+
+        #qrcode-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1001;
+        }
+        #qrcode-container canvas {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -123,6 +141,7 @@
     <div id="tables-container"></div>
     <div id="winner-announcement"></div>
     <div id="fireworks-container"></div>
+    <div id="qrcode-container"></div>
 
     <div id="settings-container">
         <div id="settings-panel">
@@ -150,7 +169,32 @@
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.10.7/dist/index.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const ip = "{{ ip_address }}";
+            if (ip && ip !== '127.0.0.1') {
+                const mobileUrl = `http://${ip}:5000/mobile`;
+                const qrContainer = document.getElementById('qrcode-container');
+                
+                const title = document.createElement('div');
+                title.textContent = '手機請掃我';
+                title.style.textAlign = 'center';
+                title.style.fontWeight = 'bold';
+                title.style.marginBottom = '5px';
+                title.style.color = '#0D1B2A';
+                qrContainer.appendChild(title);
+
+                const canvas = document.createElement('canvas');
+                qrContainer.appendChild(canvas);
+
+                QRCode.toCanvas(canvas, mobileUrl, { width: 150, margin: 2 }, function (err) {
+                    if (err) console.error(err);
+                    console.log('QR code generated for:', mobileUrl);
+                });
+            }
+        });
+
         const socket = io();
         const tablesContainer = document.getElementById('tables-container');
         const winnerAnnounce = document.getElementById('winner-announcement');

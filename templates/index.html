@@ -18,7 +18,14 @@
             --locked-color: #50c878;
             --reset-color: #e74c3c;
             --reset-hover: #c0392b;
-            --table-size: 140px; /* Default table size */
+            --table-size: 120px; /* Default table size */
+
+            /* Group Colors */
+            --group-abc-border: #C77DFF;
+            --group-de-border: #7D8AFF;
+            --group-fgi-border: #FF9B54;
+            --group-hj-border: #D2691E;
+            --group-main-border: #e74c3c;
         }
         body {
             font-family: 'Noto Sans TC', 'Poppins', sans-serif;
@@ -26,23 +33,32 @@
             color: var(--text-color);
             text-align: center;
             margin: 0;
-            padding: 20px;
-            overflow: hidden;
+            padding: 15px;
+            overflow-x: hidden;
         }
         h1 {
             color: var(--accent-color);
             font-weight: 700;
-            font-size: 3em;
+            font-size: 2.8em;
+            margin-top: 0;
+            margin-bottom: 25px;
             text-shadow: 0 0 10px rgba(255, 195, 0, 0.5);
         }
         #tables-container {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+        .table-row {
+            display: flex;
             justify-content: center;
-            gap: 30px;
-            margin: 40px auto;
-            padding-bottom: 100px; /* Add padding to avoid overlap with settings */
-            max-width: 95vw;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         .table-card {
             border: 3px solid var(--secondary-card-bg);
@@ -56,10 +72,9 @@
             background-color: var(--primary-card-bg);
             transition: all 0.3s ease-in-out;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            position: relative;
         }
         .table-card.locked {
-            background-color: var(--primary-card-bg);
-            border-color: var(--locked-color);
             cursor: pointer;
         }
         .table-card.locked:hover {
@@ -83,112 +98,73 @@
             }
         }
         .table-id {
-            font-size: calc(var(--table-size) * 0.12);
-            font-weight: 600;
+            font-size: calc(var(--table-size) * 0.22);
+            font-weight: 700;
             color: var(--text-color);
         }
+        .table-name {
+            font-size: calc(var(--table-size) * 0.15);
+            font-weight: 400;
+            color: #ccc;
+        }
         .table-number {
-            font-size: calc(var(--table-size) * 0.25);
+            font-size: calc(var(--table-size) * 0.35);
             font-weight: 700;
             color: #ffffff;
-            height: calc(var(--table-size) * 0.4);
-        }
-        #fireworks-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; pointer-events: none;
-        }
-        #winner-announcement {
-            display: none;
-            position: fixed;
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: auto;
-            white-space: nowrap;
-            background: rgba(13, 27, 42, 0.9);
-            color: var(--accent-color);
-            padding: 40px 60px;
-            border-radius: 20px;
-            font-size: 4.5em;
-            font-weight: 700;
-            z-index: 1000;
-            animation: fadeIn 1s;
-            border: 3px solid var(--accent-color);
-            box-shadow: 0 0 50px rgba(255, 195, 0, 0.5);
+            width: 100%;
+            height: auto;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
+        .table-card .table-id, .table-card .table-name {
+            transition: opacity 0.3s ease;
+        }
+        .table-card.is-spinning .table-id, .table-card.is-spinning .table-name {
+            opacity: 0.2;
+        }
+        .table-card.is-spinning .table-number {
+            opacity: 1;
+        }
+        .table-card.locked .table-id, .table-card.locked .table-name {
+            opacity: 1;
+        }
+        .table-card.locked .table-number {
+            opacity: 0;
+        }
+        .locked-number {
+            font-size: calc(var(--table-size) * 0.4);
+            font-weight: 700;
+            color: var(--locked-color);
+        }
+
+        /* Group Colors */
+        .group-abc { border-color: var(--group-abc-border); }
+        .group-de { border-color: var(--group-de-border); }
+        .group-fgi { border-color: var(--group-fgi-border); }
+        .group-hj { border-color: var(--group-hj-border); }
+        .group-main { border-color: var(--group-main-border); width: calc(var(--table-size) * 1.2); height: calc(var(--table-size) * 1.2); }
+
+        #fireworks-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; pointer-events: none; }
+        #winner-announcement { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: auto; white-space: nowrap; background: rgba(13, 27, 42, 0.9); color: var(--accent-color); padding: 40px 60px; border-radius: 20px; font-size: 4em; font-weight: 700; z-index: 1000; animation: fadeIn 1s; border: 3px solid var(--accent-color); box-shadow: 0 0 50px rgba(255, 195, 0, 0.5); }
         @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -60%); } to { opacity: 1; transform: translate(-50%, -50%); } }
 
         /* Settings Panel Styles */
-        #settings-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1002;
-        }
-        #settings-toggle-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--accent-color);
-            color: var(--bg-color);
-            border: none;
-            cursor: pointer;
-            font-size: 1.8em;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
-        }
+        #settings-container { position: fixed; bottom: 20px; right: 20px; z-index: 1002; }
+        #settings-toggle-btn { width: 60px; height: 60px; border-radius: 50%; background-color: var(--accent-color); color: var(--bg-color); border: none; cursor: pointer; font-size: 1.8em; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.3s ease; }
         #settings-toggle-btn:hover { transform: rotate(45deg); }
-        #settings-panel {
-            position: absolute;
-            bottom: 80px;
-            right: 0;
-            width: 300px;
-            background-color: var(--primary-card-bg);
-            border: 1px solid var(--secondary-card-bg);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-            transform: translateY(20px) scale(0.95);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease-in-out;
-            transform-origin: bottom right;
-        }
-        #settings-container.expanded #settings-panel {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-            visibility: visible;
-        }
+        #settings-panel { position: absolute; bottom: 80px; right: 0; width: 300px; background-color: var(--primary-card-bg); border: 1px solid var(--secondary-card-bg); border-radius: 10px; padding: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.5); transform: translateY(20px) scale(0.95); opacity: 0; visibility: hidden; transition: all 0.3s ease-in-out; transform-origin: bottom right; }
+        #settings-container.expanded #settings-panel { transform: translateY(0) scale(1); opacity: 1; visibility: visible; }
         .settings-group { margin-bottom: 18px; text-align: left; }
         .settings-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9em; }
-        .settings-group input[type="number"], .settings-group input[type="range"] {
-            width: 100%;
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid var(--secondary-card-bg);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            box-sizing: border-box;
-        }
-        .input-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .settings-group input[type="number"] { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid var(--secondary-card-bg); background-color: var(--bg-color); color: var(--text-color); box-sizing: border-box; }
+        .input-row { display: flex; gap: 10px; align-items: center; }
         .input-row input { flex-grow: 1; }
-        .settings-group button, #reset-button {
-            width: 100%;
-            padding: 10px 15px;
-            font-size: 1em;
-            font-weight: 600;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+        .settings-group button, #reset-button { width: 100%; padding: 10px 15px; font-size: 1em; font-weight: 600; color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
         .settings-group button { background-color: var(--secondary-card-bg); }
         .settings-group button:hover { background-color: #5A7D9A; }
         #reset-button { background-color: var(--reset-color); }
@@ -197,7 +173,11 @@
 </head>
 <body>
     <h1>師大重聚 點出好運</h1>
-    <div id="tables-container"></div>
+    
+    <div id="tables-container">
+        <!-- This will be populated by JS based on layout from server -->
+    </div>
+
     <div id="winner-announcement"></div>
     <div id="fireworks-container"></div>
 
@@ -205,23 +185,12 @@
     <div id="settings-container">
         <div id="settings-panel">
             <div class="settings-group">
-                <label for="table-count-input">設定桌數</label>
-                <div class="input-row">
-                    <input type="number" id="table-count-input" min="1" placeholder="例如: 15">
-                    <button id="set-table-count-btn">設定</button>
-                </div>
-            </div>
-            <div class="settings-group">
                 <label>設定數字範圍</label>
                 <div class="input-row">
                     <input type="number" id="min-range-input" placeholder="Min">
                     <input type="number" id="max-range-input" placeholder="Max">
                     <button id="set-range-btn">設定</button>
                 </div>
-            </div>
-            <div class="settings-group">
-                <label for="table-size-slider">調整桌子大小</label>
-                <input type="range" id="table-size-slider" min="80" max="200" value="140">
             </div>
             <div class="settings-group">
                  <button id="reset-button">重新開始遊戲</button>
@@ -244,73 +213,126 @@
         // Settings Panel Elements
         const settingsContainer = document.getElementById('settings-container');
         const settingsToggleBtn = document.getElementById('settings-toggle-btn');
-        const settingsPanel = document.getElementById('settings-panel');
         const resetButton = document.getElementById('reset-button');
-        const tableCountInput = document.getElementById('table-count-input');
-        const setTableCountBtn = document.getElementById('set-table-count-btn');
         const minRangeInput = document.getElementById('min-range-input');
         const maxRangeInput = document.getElementById('max-range-input');
         const setRangeBtn = document.getElementById('set-range-btn');
-        const tableSizeSlider = document.getElementById('table-size-slider');
 
         let numberSpinners = {};
         let isGameOver = false;
-        let currentNumberRange = [1, 100]; // Default range
+        let currentNumberRange = [1, 100];
+        let tableLayout = [];
 
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function renderTables(state) {
-            tablesContainer.innerHTML = '';
-            const totalTables = state.total_tables;
-            currentNumberRange = state.number_range; // Update current range
-            
-            // Update placeholders in settings
-            tableCountInput.placeholder = `目前: ${totalTables}`;
+        function createLayout(layout) {
+            tablesContainer.innerHTML = ''; // Clear previous layout
+            const rows = {};
+            // Group tables by row number from their ID
+            layout.forEach(def => {
+                const rowNum = def.id.charAt(1);
+                if (!rows[rowNum]) rows[rowNum] = [];
+                rows[rowNum].push(def);
+            });
+
+            // Sort rows and create row divs
+            Object.keys(rows).sort((a, b) => b.localeCompare(a)).forEach(rowNum => {
+                if (rowNum === '主') return; // Handle main table separately
+                const rowDiv = document.createElement('div');
+                rowDiv.classList.add('table-row');
+                rows[rowNum].forEach(def => {
+                    const card = createTableCard(def);
+                    rowDiv.appendChild(card);
+                });
+                tablesContainer.appendChild(rowDiv);
+            });
+
+            // Add the main table at the end
+            const mainTableDef = layout.find(def => def.id === '主桌');
+            if (mainTableDef) {
+                const mainTableRow = document.createElement('div');
+                mainTableRow.classList.add('table-row');
+                const mainCard = createTableCard(mainTableDef);
+                mainTableRow.appendChild(mainCard);
+                tablesContainer.appendChild(mainTableRow);
+            }
+        }
+
+        function createTableCard(definition) {
+            const card = document.createElement('div');
+            card.classList.add('table-card', `group-${definition.group}`);
+            card.id = `table-${definition.id}`;
+
+            const tableIdDiv = document.createElement('div');
+            tableIdDiv.classList.add('table-id');
+            tableIdDiv.textContent = definition.id;
+
+            const tableNameDiv = document.createElement('div');
+            tableNameDiv.classList.add('table-name');
+            tableNameDiv.textContent = definition.name;
+
+            const tableNumberDiv = document.createElement('div');
+            tableNumberDiv.classList.add('table-number');
+            tableNumberDiv.id = `number-${definition.id}`;
+
+            const lockedNumberDiv = document.createElement('div');
+            lockedNumberDiv.classList.add('locked-number');
+            lockedNumberDiv.id = `locked-number-${definition.id}`;
+
+            if (definition.id === '主桌') {
+                tableIdDiv.textContent = '主桌';
+                tableNameDiv.textContent = '';
+            }
+
+            card.appendChild(tableIdDiv);
+            card.appendChild(tableNameDiv);
+            card.appendChild(tableNumberDiv);
+            card.appendChild(lockedNumberDiv);
+            return card;
+        }
+
+        function updateTableStates(state) {
+            currentNumberRange = state.number_range;
             minRangeInput.placeholder = `Min: ${currentNumberRange[0]}`;
             maxRangeInput.placeholder = `Max: ${currentNumberRange[1]}`;
 
-            for (let i = 1; i <= totalTables; i++) {
-                const table = state.tables[i];
-                const card = document.createElement('div');
-                card.classList.add('table-card');
-                card.id = `table-${i}`;
-                
-                const tableIdDiv = document.createElement('div');
-                tableIdDiv.classList.add('table-id');
-                tableIdDiv.textContent = `第 ${i} 桌`;
-                
-                const tableNumberDiv = document.createElement('div');
-                tableNumberDiv.classList.add('table-number');
-                tableNumberDiv.id = `number-${i}`;
+            for (const tableId in state.tables) {
+                const table = state.tables[tableId];
+                const card = document.getElementById(`table-${tableId}`);
+                if (!card) continue;
+
+                const tableNumberDiv = document.getElementById(`number-${tableId}`);
+                const lockedNumberDiv = document.getElementById(`locked-number-${tableId}`);
 
                 if (table.locked) {
+                    card.classList.remove('is-spinning');
                     card.classList.add('locked');
-                    tableNumberDiv.textContent = table.number;
-                    if (numberSpinners[i]) {
-                        clearInterval(numberSpinners[i]);
-                        delete numberSpinners[i];
+                    lockedNumberDiv.textContent = table.number;
+                    if (numberSpinners[tableId]) {
+                        clearInterval(numberSpinners[tableId]);
+                        delete numberSpinners[tableId];
                     }
-                    card.addEventListener('click', () => {
-                        if (confirm(`您確定要重置「第 ${i} 桌」嗎？`)) {
-                            socket.emit('reset_table', { table_id: i });
+                    card.onclick = () => {
+                        if (confirm(`您確定要重置「${tableId}」嗎？`)) {
+                            socket.emit('reset_table', { table_id: tableId });
                         }
-                    });
+                    };
                 } else {
-                    if (!numberSpinners[i]) {
+                    card.classList.remove('locked');
+                    lockedNumberDiv.textContent = '';
+                    card.onclick = null;
+                    if (!numberSpinners[tableId]) {
+                        card.classList.add('is-spinning');
                         tableNumberDiv.textContent = getRandomInt(currentNumberRange[0], currentNumberRange[1]);
-                        numberSpinners[i] = setInterval(() => {
-                            const numDiv = document.getElementById(`number-${i}`);
-                            if (numDiv) {
-                                numDiv.textContent = getRandomInt(currentNumberRange[0], currentNumberRange[1]);
+                        numberSpinners[tableId] = setInterval(() => {
+                            if (tableNumberDiv) {
+                                tableNumberDiv.textContent = getRandomInt(currentNumberRange[0], currentNumberRange[1]);
                             }
                         }, 100);
                     }
                 }
-                card.appendChild(tableIdDiv);
-                card.appendChild(tableNumberDiv);
-                tablesContainer.appendChild(card);
             }
         }
 
@@ -327,8 +349,12 @@
         // --- Event Listeners ---
         socket.on('update_state', (state) => {
             console.log('State updated:', state);
+            if (tableLayout.length === 0) { // First time receiving state
+                tableLayout = state.layout;
+                createLayout(tableLayout);
+            }
             if (!isGameOver) {
-                renderTables(state);
+                updateTableStates(state);
             }
         });
 
@@ -341,7 +367,7 @@
             Object.values(numberSpinners).forEach(clearInterval);
             numberSpinners = {};
 
-            winnerAnnounce.innerHTML = `恭喜第 ${winnerId} 桌!<br>🎉 ${winnerNumber} 🎉`;
+            winnerAnnounce.innerHTML = `恭喜 ${winnerId} 桌!<br>🎉 ${winnerNumber} 🎉`;
             winnerAnnounce.style.display = 'block';
 
             const winnerCard = document.getElementById(`table-${winnerId}`);
@@ -354,7 +380,8 @@
         socket.on('game_restarted', () => {
             console.log('Game has been restarted by admin.');
             resetFrontend();
-            socket.emit('get_initial_state');
+            // Request fresh state, which will trigger a re-render
+            socket.emit('connect'); 
         });
 
         // --- Settings Panel Logic ---
@@ -365,18 +392,6 @@
         resetButton.addEventListener('click', () => {
             if (confirm('您確定要重新開始整個遊戲嗎？所有桌次的號碼都將被清空。')) {
                 socket.emit('reset_game');
-            }
-        });
-
-        setTableCountBtn.addEventListener('click', () => {
-            const newCount = parseInt(tableCountInput.value, 10);
-            if (newCount && newCount > 0) {
-                if (confirm(`確定要將桌數設定為 ${newCount} 嗎？這會重置整個遊戲。`)) {
-                    socket.emit('set_total_tables', { total_tables: newCount });
-                    tableCountInput.value = '';
-                }
-            } else {
-                alert('請輸入一個有效的正整數。');
             }
         });
 
@@ -392,11 +407,6 @@
             } else {
                 alert('請輸入有效的數字範圍，且最小值需小於最大值。');
             }
-        });
-
-        tableSizeSlider.addEventListener('input', (e) => {
-            const newSize = e.target.value;
-            document.documentElement.style.setProperty('--table-size', `${newSize}px`);
         });
 
     </script>

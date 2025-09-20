@@ -115,7 +115,7 @@
         <div id="selection-view" class="active">
             <h2>師大重聚 點出好運</h2>
             <select id="table-selector">
-                <option value="">-- 請選擇 --</option>
+                <option value="">-- 請選擇您的桌號 --</option>
             </select>
             <div id="message"></div>
         </div>
@@ -141,54 +141,53 @@
         const numberDisplay = document.getElementById('number-display');
         const stopButton = document.getElementById('stop-button');
         
-        // --- 新增 ---
         const fireworksContainer = document.getElementById('fireworks-container');
         const fireworks = new Fireworks.default(fireworksContainer);
-        // --- 結束新增 ---
 
         let myTableId = null;
         let numberSpinner = null;
+        let currentNumberRange = [1, 100];
+        let tableLayout = []; // <--- FIX: Store layout info
 
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        // (此處的 'update_state' 監聽器和相關函式不變，故省略以節省篇幅)
-        // ... 原有程式碼 ...
         socket.on('update_state', (state) => {
             console.log('State updated:', state);
-            if (tableSelector.options.length <= 1) {
-                for (let i = 1; i <= state.total_tables; i++) {
-                    const option = document.createElement('option');
-                    option.value = i;
-                    option.textContent = `第 ${i} 桌`;
-                    if (state.tables[i].locked) {
+            currentNumberRange = state.number_range;
+            tableLayout = state.layout; // <--- FIX: Save the layout from state
+
+            const isFirstLoad = tableSelector.options.length <= 1;
+
+            // Populate or update dropdown options based on state
+            state.layout.forEach(tableDef => {
+                let option = isFirstLoad ? document.createElement('option') : Array.from(tableSelector.options).find(o => o.value === tableDef.id);
+                if (!option) return;
+
+                option.value = tableDef.id;
+                option.textContent = `${tableDef.id} ${tableDef.name}`;
+                option.disabled = false;
+
+                const tableState = state.tables[tableDef.id];
+                if (tableState) {
+                    if (tableState.locked) {
                         option.disabled = true;
                         option.textContent += ' (已鎖定)';
-                    } else if (state.tables[i].sid) {
+                    } else if (tableState.sid && myTableId !== tableDef.id) {
                         option.disabled = true;
                         option.textContent += ' (操作中)';
                     }
+                }
+                if (isFirstLoad) {
                     tableSelector.appendChild(option);
                 }
-            } else {
-                for (let i = 1; i <= state.total_tables; i++) {
-                    const option = tableSelector.options[i];
-                    if (state.tables[i].locked) {
-                        option.disabled = true;
-                        option.textContent = `第 ${i} 桌 (已鎖定)`;
-                    } else if (state.tables[i].sid && myTableId != i) {
-                        option.disabled = true;
-                        option.textContent = `第 ${i} 桌 (操作中)`;
-                    } else {
-                        option.disabled = false;
-                        option.textContent = `第 ${i} 桌`;
-                    }
-                }
-            }
+            });
+
+            // Update game view if a table is selected
             if (myTableId) {
                 const tableState = state.tables[myTableId];
-                if (tableState.locked) {
+                if (tableState && tableState.locked) {
                     if (numberSpinner) clearInterval(numberSpinner);
                     numberDisplay.textContent = tableState.number;
                     stopButton.textContent = '已鎖定';
@@ -196,6 +195,7 @@
                 }
             }
         });
+
         tableSelector.addEventListener('change', () => {
             const selectedId = tableSelector.value;
             if (selectedId) {
@@ -203,19 +203,32 @@
                 socket.emit('select_table', { table_id: selectedId });
             }
         });
+
         socket.on('table_in_use', (data) => {
-            messageDiv.textContent = `第 ${data.table_id} 桌正在被他人操作中！`;
+            messageDiv.textContent = `桌次 ${data.table_id} 正在被他人操作中！`;
             tableSelector.value = '';
         });
+
         socket.on('table_selected_ok', (data) => {
             myTableId = data.table_id;
+            // <--- FIX: Use the stored tableLayout to find table info
+            const tableDef = tableLayout.find(t => t.id === myTableId);
+
             selectionView.classList.remove('active');
             gameView.classList.add('active');
-            gameTitle.textContent = `師大重聚 - 第 ${myTableId} 桌`;
+            
+            if (tableDef) {
+                gameTitle.textContent = `${tableDef.id} ${tableDef.name}`;
+            } else {
+                gameTitle.textContent = myTableId; // Fallback in case not found
+            }
+            
+            if (numberSpinner) clearInterval(numberSpinner);
             numberSpinner = setInterval(() => {
-                numberDisplay.textContent = getRandomInt(1, 100);
+                numberDisplay.textContent = getRandomInt(currentNumberRange[0], currentNumberRange[1]);
             }, 100);
         });
+
         stopButton.addEventListener('click', () => {
             if (myTableId) {
                 stopButton.disabled = true;
@@ -223,34 +236,22 @@
                 socket.emit('stop_number', { table_id: myTableId });
             }
         });
-        // ... 原有程式碼結束 ...
 
-
-        // --- 新增：監聽 game_over 事件 ---
         socket.on('game_over', (data) => {
             const winnerId = data.winner.table_id;
-            
-            // 檢查自己是否為獲勝者
-            if (myTableId && myTableId == winnerId) {
-                // 是獲勝者！
+            if (myTableId && myTableId === winnerId) {
                 console.log("We are the winner!");
-                
-                // 顯示慶祝訊息
+                gameTitle.classList.add('winner-title');
                 gameTitle.innerHTML = "🎉 我們是冠軍！ 🎉";
-                
-                // 開始放煙火
                 fireworks.start();
             }
         });
 
-        // --- 新增：監聽遊戲重置事件 ---
         socket.on('game_restarted', () => {
             console.log('Game has been restarted. Reloading page.');
-            // 簡單地重新整理頁面，回到初始狀態
             window.location.reload();
         });
 
-        // --- 新增：監聽被管理員強制重置的事件 ---
         socket.on('force_reset_client', () => {
             alert('您的桌次已被管理員重置，將返回選擇畫面。');
             window.location.reload();

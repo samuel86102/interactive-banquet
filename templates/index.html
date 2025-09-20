@@ -139,6 +139,9 @@
                 </div>
             </div>
             <div class="settings-group">
+                <button id="force-end-button" style="background-color: #f39c12;">提早結束遊戲</button>
+           </div>
+            <div class="settings-group">
                  <button id="reset-button">重新開始遊戲</button>
             </div>
         </div>
@@ -161,6 +164,7 @@
         const maxRangeInput = document.getElementById('max-range-input');
         const setRangeBtn = document.getElementById('set-range-btn');
         const testModeToggle = document.getElementById('test-mode-toggle');
+        const forceEndButton = document.getElementById('force-end-button');
 
         let numberSpinners = {};
         let isGameOver = false;
@@ -304,12 +308,13 @@
             console.log('Game Over!', data);
             isGameOver = true;
             const winnerId = data.winner.table_id;
+            const winnerName = data.winner.name;
             const winnerNumber = data.winner.number;
 
             Object.values(numberSpinners).forEach(clearInterval);
             numberSpinners = {};
 
-            winnerAnnounce.innerHTML = `恭喜 ${winnerId} 桌!<br>🎉 ${winnerNumber} 🎉`;
+            winnerAnnounce.innerHTML = `恭喜 ${winnerId} ${winnerName} 桌!<br>🎉 ${winnerNumber} 🎉`;
             winnerAnnounce.style.display = 'block';
 
             const winnerCard = document.getElementById(`table-${winnerId}`);
@@ -332,6 +337,12 @@
         resetButton.addEventListener('click', () => {
             if (confirm('您確定要重新開始整個遊戲嗎？所有桌次的號碼都將被清空。')) {
                 socket.emit('reset_game');
+            }
+        });
+
+        forceEndButton.addEventListener('click', () => {
+            if (confirm('您確定要提早結束遊戲嗎？將以目前已鎖定的最高分決定贏家。')) {
+                socket.emit('force_end_game');
             }
         });
 

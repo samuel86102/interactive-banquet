@@ -61,8 +61,10 @@ def get_game_state():
 
 def find_winner():
     """找出獲勝者"""
+    active_layout = get_active_layout()
+    table_names = {table['id']: table['name'] for table in active_layout}
     locked_tables = [
-        {'table_id': tid, 'number': tdata['number']}
+        {'table_id': tid, 'number': tdata['number'], 'name': table_names.get(tid, '')}
         for tid, tdata in tables_state.items() if tdata['locked']
     ]
     if not locked_tables:
@@ -135,6 +137,16 @@ def handle_stop_number(data):
             print(f"Game Over! Winner is Table {winner['table_id']} with number {winner['number']}")
             socketio.sleep(2)
             socketio.emit('game_over', {'winner': winner})
+
+@socketio.on('force_end_game')
+def handle_force_end_game():
+    print("--- GAME FORCED TO END by admin ---")
+    winner = find_winner()
+    if winner:
+        print(f"Game Over! Winner is Table {winner['table_id']} with number {winner['number']}")
+        socketio.emit('game_over', {'winner': winner})
+    else:
+        print("No tables had locked in a number. No winner declared.")
 
 @socketio.on('reset_game')
 def handle_reset_game():

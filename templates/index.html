@@ -179,13 +179,13 @@
             tablesContainer.innerHTML = '';
             const rows = {};
             layout.forEach(def => {
+                if (def.id === '主桌') return;
                 const rowNum = def.id.charAt(1);
                 if (!rows[rowNum]) rows[rowNum] = [];
                 rows[rowNum].push(def);
             });
 
             Object.keys(rows).sort((a, b) => b.localeCompare(a)).forEach(rowNum => {
-                if (rowNum === '主') return;
                 const rowDiv = document.createElement('div');
                 rowDiv.classList.add('table-row');
                 rows[rowNum].forEach(def => {

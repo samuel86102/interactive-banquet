@@ -157,6 +157,30 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        function sortTableDefinitions(definitions) {
+            return definitions.slice().sort((a, b) => {
+                const idA = a.id;
+                const idB = b.id;
+
+                if (idA === '主桌') return 1;
+                if (idB === '主桌') return -1;
+
+                const matchA = idA.match(/^([A-Z]+)(\d+)$/);
+                const matchB = idB.match(/^([A-Z]+)(\d+)$/);
+
+                if (matchA && matchB) {
+                    const [, letterA, numA] = matchA;
+                    const [, letterB, numB] = matchB;
+
+                    if (letterA !== letterB) {
+                        return letterA.localeCompare(letterB);
+                    }
+                    return parseInt(numA, 10) - parseInt(numB, 10);
+                }
+                return idA.localeCompare(idB);
+            });
+        }
+
         socket.on('update_state', (state) => {
             console.log('State updated:', state);
             currentNumberRange = state.number_range;
@@ -165,15 +189,31 @@
             const isFirstLoad = tableSelector.options.length <= 1;
 
             // Populate or update dropdown options based on state
-            state.layout.forEach(tableDef => {
-                let option = isFirstLoad ? document.createElement('option') : Array.from(tableSelector.options).find(o => o.value === tableDef.id);
-                if (!option) return;
+            const layoutForDropdown = isFirstLoad ? sortTableDefinitions(state.layout) : state.layout;
 
-                option.value = tableDef.id;
-                option.textContent = `${tableDef.id} ${tableDef.name}`;
-                option.disabled = false;
+            if (isFirstLoad) {
+                layoutForDropdown.forEach(tableDef => {
+                    let option = document.createElement('option');
+                    option.value = tableDef.id;
+                    option.textContent = `${tableDef.id} ${tableDef.name}`;
+                    tableSelector.appendChild(option);
+                });
+            }
+
+            // Update options based on the current state (disabling etc.)
+            Array.from(tableSelector.options).forEach(option => {
+                if (!option.value) return; // Skip placeholder
+
+                const tableDef = state.layout.find(t => t.id === option.value);
+                if (!tableDef) {
+                    option.remove(); // Remove if no longer in layout
+                    return;
+                }
 
                 const tableState = state.tables[tableDef.id];
+                option.disabled = false;
+                option.textContent = `${tableDef.id} ${tableDef.name}`;
+
                 if (tableState) {
                     if (tableState.locked) {
                         option.disabled = true;
@@ -183,10 +223,8 @@
                         option.textContent += ' (操作中)';
                     }
                 }
-                if (isFirstLoad) {
-                    tableSelector.appendChild(option);
-                }
             });
+
 
             // Update game view if a table is selected
             if (myTableId) {
